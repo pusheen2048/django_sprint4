@@ -10,8 +10,10 @@ class PostForm(ModelForm):
 
     class Meta:
         model = Post
-        fields = ('title', 'text', 'pub_date', 'is_published', 'location', 'category', 'image')
-        widgets = {'pub_date': forms.DateTimeInput(attrs={'type': 'datetime-local'})}
+        fields = ('title', 'text', 'pub_date', 'is_published',
+                  'location', 'category', 'image')
+        widgets = {'pub_date':
+                   forms.DateTimeInput(attrs={'type': 'datetime-local'})}
 
 
 class CommentForm(ModelForm):
@@ -30,6 +32,7 @@ class UserUpdateForm(ModelForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
-        if User.objects.filter(email=email).exclude(username=username).exists():
-            raise forms.ValidationError('Этот адрес электронной почты уже используется')
+        obj = User.objects.filter(email=email).exclude(username=username)
+        if obj.exists():
+            raise forms.ValidationError('Уже есть пользователь с таким email.')
         return email

@@ -86,9 +86,8 @@ class Comment(models.Model):
                                related_name='comment')
     text = models.TextField('Текст комментария')
     created_at = models.DateTimeField('Добавлено', auto_now_add=True)
-    
+
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ('created_at', )
-
