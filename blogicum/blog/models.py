@@ -44,13 +44,16 @@ class Location(PublishedModel):
 
 
 class Post(PublishedModel):
-    title = models.CharField('Заголовок', max_length=256, null=False)
-    text = models.TextField('Текст', null=False)
+    title = models.CharField('Заголовок', max_length=256)
+    text = models.TextField('Текст')
     help_text_pub_date = 'Если установить дату и время в будущем — \
 можно делать отложенные публикации.'
     pub_date = models.DateTimeField('Дата и время публикации',
-                                    help_text=help_text_pub_date,
-                                    null=False)
+                                    help_text=help_text_pub_date)
+    image = models.ImageField('Изображение',
+                              upload_to='post_images',
+                              null=True,
+                              blank=True)
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                verbose_name='Автор публикации')
@@ -70,3 +73,22 @@ class Post(PublishedModel):
 
     def __str__(self):
         return self.title
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post,
+                             on_delete=models.CASCADE,
+                             verbose_name='Публикация',
+                             related_name='comment')
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               verbose_name='Автор комментария',
+                               related_name='comment')
+    text = models.TextField('Текст комментария')
+    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ('created_at', )
+

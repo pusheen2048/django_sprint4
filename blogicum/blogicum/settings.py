@@ -15,6 +15,13 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
+
+LOGIN_REDIRECT_URL = 'blog:index'
+
+LOGIN_URL = 'login'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -25,12 +32,14 @@ SECRET_KEY = 'django-insecure-zphj_er$z4yhh3f5re$8x^iss6fa72jdhm+ex96aut_j%zqm&p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Application definition
 
 INSTALLED_APPS = [
+    'django_bootstrap5',
     'pages.apps.PagesConfig',
     'blog.apps.BlogConfig',
     'django.contrib.admin',

@@ -2,12 +2,12 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 
 
-def handler403(request):
+def handler403(request, exception):
     template = 'pages/403csrf.html'
     return render(request, template, status=403)
 
 
-def handler404(request):
+def handler404(request, exception):
     template = 'pages/404.html'
     return render(request, template, status=404)
 
