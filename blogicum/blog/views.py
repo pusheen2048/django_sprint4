@@ -11,13 +11,29 @@ from blog.models import Category, Comment, Post
 from blog.forms import CommentForm, PostForm, UserUpdateForm
 
 
-def get_published_posts():
-    return (Post.objects.filter(pub_date__lte=timezone.now(),
-                                is_published=True,
-                                category__is_published=True)
-                        .select_related('category', 'author')
-                        .annotate(comment_count=Count('comment'))
-                        .order_by('-pub_date'))
+def get_all_posts():
+    return Post.objects.select_related('category', 'author')
+
+
+def get_published_posts(queryset):
+    return (queryset.filter(pub_date__lte=timezone.now(),
+                            is_published=True,
+                            category__is_published=True))
+
+
+def get_user_posts(user):
+    return get_all_posts().filter(author=user)
+
+
+def annotate(queryset):
+    return (queryset.annotate(comment_count=Count('comment'))
+                    .order_by('-pub_date'))
+
+
+def get_page(request, queryset, paginate_by):
+    paginator = Paginator(queryset, paginate_by)
+    page = request.GET.get('page')
+    return paginator.get_page(page)
 
 
 class IndexView(ListView):
@@ -26,7 +42,7 @@ class IndexView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return get_published_posts()
+        return annotate(get_published_posts(get_all_posts()))
 
 
 class RegistrationView(CreateView):
@@ -47,16 +63,10 @@ class ProfileView(DetailView):
         context = super().get_context_data(**kwargs)
         user = self.object
         context['profile'] = user
-        posts = (Post.objects.select_related('category', 'author')
-                             .filter(author=user)
-                             .annotate(comment_count=Count('comment'))
-                             .order_by('-pub_date'))
+        posts = annotate(get_user_posts(user))
         if user != self.request.user:
-            posts = posts.filter(is_published=True,
-                                 pub_date__lte=timezone.now())
-        paginator = Paginator(posts, 10)
-        page = paginator.get_page(self.request.GET.get('page'))
-        context['page_obj'] = page
+            posts = get_published_posts(posts)
+        context['page_obj'] = get_page(self.request, posts, 10)
         return context
 
 
@@ -103,9 +113,7 @@ class PostDetailView(LoginRequiredMixin, DetailView):
             post = get_object_or_404(posts, pk=post_id)
             if post and post.author == user:
                 return post
-        return get_object_or_404(posts.filter(is_published=True,
-                                              pub_date__lte=timezone.now(),
-                                              category__is_published=True),
+        return get_object_or_404(get_published_posts(get_all_posts()),
                                  pk=post_id)
 
     def get_context_data(self, **kwargs):
@@ -173,7 +181,7 @@ class CategoryPostsView(ListView):
 
     def get_queryset(self):
         category = self.kwargs.get('category_slug')
-        queryset = get_published_posts()
+        queryset = get_published_posts(get_all_posts())
         return queryset.filter(category__slug=category)
 
     def get_context_data(self, **kwargs):
