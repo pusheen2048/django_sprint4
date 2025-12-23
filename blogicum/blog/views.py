@@ -12,7 +12,7 @@ from blog.forms import CommentForm, PostForm, UserUpdateForm
 
 
 def get_all_posts():
-    return Post.objects.select_related('category', 'author')
+    return Post.objects.select_related('category', 'author', 'location')
 
 
 def get_published_posts(queryset):
@@ -108,11 +108,9 @@ class PostDetailView(LoginRequiredMixin, DetailView):
     def get_object(self):
         user = self.request.user
         post_id = self.kwargs.get('post_id')
-        posts = Post.objects.select_related('category', 'author', 'location')
-        if user and user.is_authenticated:
-            post = get_object_or_404(posts, pk=post_id)
-            if post and post.author == user:
-                return post
+        post = get_object_or_404(get_all_posts(), pk=post_id)
+        if post and post.author == user:
+            return post
         return get_object_or_404(get_published_posts(get_all_posts()),
                                  pk=post_id)
 
