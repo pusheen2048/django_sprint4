@@ -90,7 +90,7 @@ class ChangePasswordView(LoginRequiredMixin, UpdateView):
                             kwargs={'username': self.request.user.username})
 
 
-class PostDetailView(DetailView):
+class PostDetailView(LoginRequiredMixin, DetailView):
     model = Post
     template_name = 'blog/detail.html'
     pk_url_kwarg = 'post_id'
